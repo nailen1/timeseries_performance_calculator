@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.windsurfrules
+.installed.cfg
+*.egg
+
+# Virtual Environment
+env-*/
+venv/
+ENV/
+
+# Environment variables
+.env
+
+# Python 바이트 코드 캐시
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# IDE
+.idea/
+.vscode/
