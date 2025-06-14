@@ -2,7 +2,6 @@ import pandas as pd
 from functools import partial
 from string_date_controller import MAPPING_MONTHS
 from canonical_transformer import map_number_to_signed_string, map_signed_string_to_number
-from timeseries_performance_calculator.tables.table_utils import style_table, show_table_performance
 from timeseries_performance_calculator.functionals import pipe
 from .monthly_returns_table import map_prices_to_table_monthly_returns, style_table_year_monthly
 

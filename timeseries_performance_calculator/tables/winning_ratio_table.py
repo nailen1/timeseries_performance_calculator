@@ -1,7 +1,7 @@
 import pandas as pd
 from typing import Tuple
 from universal_timeseries_transformer import PricesMatrix
-from .monthly_cumreturns_table import get_monthly_cumreturns_table, add_alpha_column, get_prices_with_benchmark
+# from .monthly_cumreturns_table import get_monthly_cumreturns_table, add_alpha_column, get_prices_with_benchmark
 
 def map_prices_to_relative(prices: pd.DataFrame, benchmark_column: str) -> pd.DataFrame:
     df = get_monthly_cumreturns_table(prices).copy()
