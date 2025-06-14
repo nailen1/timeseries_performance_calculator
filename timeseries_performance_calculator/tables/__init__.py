@@ -1,5 +1,6 @@
 from .period_returns_table import *
-from .monthly_cumreturns_table import *
+from .monthly_returns_table import *
+from .monthly_relative_table import *
 from .yearly_cumreturns_table import *
 from .winning_ratio_table import *
 from .annualized_return_table import *

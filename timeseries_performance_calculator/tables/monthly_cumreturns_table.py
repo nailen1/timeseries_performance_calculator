@@ -5,7 +5,7 @@ from universal_timeseries_transformer import PricesMatrix
 from string_date_controller import MAPPING_MONTHS
 from canonical_transformer import map_number_to_signed_string, map_signed_string_to_number
 from timeseries_performance_calculator.dataframe_basis.dataframe_calculator import get_cumreturns_row_between_dates, get_cumreturns_row_ytd_of_year
-from .consts import MAPPING_INDEX_NAMES
+from timeseries_performance_calculator.consts import MAPPING_INDEX_NAMES
 
 def get_monthly_cumreturns_table(prices: pd.DataFrame) -> pd.DataFrame:
     pm = PricesMatrix(prices)
