@@ -8,11 +8,11 @@ map_prices_to_table_yearly_returns = partial(map_prices_to_table_iterated_return
 get_table_yearly_returns = map_prices_to_table_yearly_returns
 show_table_yearly_returns = partial(show_table_performance, get_table_yearly_returns)
 
-def map_prices_to_table_yearly_relative(prices, ticker_bbg_benchmark=None, option_round=None):
-    if ticker_bbg_benchmark is None:
-        ticker_bbg_benchmark = prices.columns[1]
+def map_prices_to_table_yearly_relative(prices, name_benchmark=None, option_round=None):
+    if name_benchmark is None:
+        name_benchmark = prices.columns[1]
     df = map_prices_to_table_yearly_returns(prices).copy()
-    index_to_keep = [0, df.index.get_loc(ticker_bbg_benchmark)]
+    index_to_keep = [0, df.index.get_loc(name_benchmark)]
     df = df.iloc[index_to_keep, :]
     if option_round:
         df = df.map(lambda value: map_number_to_signed_string(value=value, decimal_digits=option_round))
@@ -22,9 +22,15 @@ def map_prices_to_table_yearly_relative(prices, ticker_bbg_benchmark=None, optio
 
 get_table_yearly_relative = map_prices_to_table_yearly_relative
 
-def show_table_yearly_relative(prices, ticker_bbg_benchmark=None, option_round=4, option_signed=True, option_rename_index=True):
+def show_table_yearly_relative(prices, name_benchmark=None, option_round=4, option_signed=True, option_rename_index=True):
     style_table_with_options = partial(style_table, option_round=option_round, option_signed=option_signed, option_rename_index=option_rename_index)
     return pipe(
-        partial(map_prices_to_table_yearly_relative, ticker_bbg_benchmark=ticker_bbg_benchmark, option_round=option_round),
+        partial(map_prices_to_table_yearly_relative, name_benchmark=name_benchmark, option_round=option_round),
         style_table_with_options,
     )(prices)
+
+def show_table_yearly_relative_by_year(prices, name_benchmark=None, year=None, option_round=4, option_signed=True, option_rename_index=True):
+    table_ytds = show_table_yearly_relative(prices, name_benchmark=name_benchmark, option_round=option_round)
+    table_ytd = table_ytds[year] if year is not None else table_ytds.iloc[:, -1]
+    table_ytd = table_ytd.to_frame('YTD')
+    return table_ytd

@@ -12,7 +12,7 @@ def map_prices_to_table_iterated_returns(prices: pd.DataFrame, option_iterated: 
     
     mapping_date_pairs = {
         'monthly': pm.monthly_date_pairs,
-        'yearly': pm.ytd_date_pairs,
+        'yearly': pm.yearly_date_pairs,
         'period': pm.historical_dates,
     }
     date_pairs = mapping_date_pairs[option_iterated]

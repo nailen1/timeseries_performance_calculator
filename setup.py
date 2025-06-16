@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="timeseries_performance_calculator",
-    version="0.1.1",
+    version="0.2.0",
     packages=find_packages(),
     install_requires=[
         req.strip() for req in open("requirements.txt", encoding="utf-8")
