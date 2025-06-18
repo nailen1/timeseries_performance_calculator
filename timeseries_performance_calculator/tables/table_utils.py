@@ -4,7 +4,6 @@ from typing import Union, Optional, Callable
 from canonical_transformer import map_number_to_signed_string
 from timeseries_performance_calculator.consts import MAPPING_INDEX_NAMES
 from timeseries_performance_calculator.functionals import pipe
-from fund_insight_engine import get_fund_codes_all
 
 def style_numbers(df: pd.DataFrame, option_round: Union[int, None] = None, option_signed: bool = False) -> pd.DataFrame:
     df = df.copy()
@@ -19,7 +18,8 @@ def rename_as_default_index_names(table: pd.DataFrame, option_rename_index: bool
         table
         .copy()
         .rename(index=MAPPING_INDEX_NAMES)
-        .rename(index={fund_code: 'Fund' for fund_code in get_fund_codes_all()})
+        .rename(index=lambda idx: 'Fund' if (isinstance(idx, str) and len(idx) == 6 and any(c.isdigit() for c in idx)) else idx)
+        # .rename(index={fund_code: 'Fund' for fund_code in get_fund_codes_all()})
     ) if option_rename_index else table
     return table
 

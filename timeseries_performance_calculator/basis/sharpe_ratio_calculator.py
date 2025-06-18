@@ -8,8 +8,6 @@ def validate_returns_for_sharpe_ratio(returns_with_free):
         raise ValueError("DataFrame must have exactly 2 columns")
 
 def calculate_sharpe_ratio(returns, free_returns=None):
-    # if free_returns is None:
-    #     free_returns = load_free_returns()
     if free_returns is None:
         free_returns = pd.DataFrame(data={'date': returns.index, 'zero_free_return': 0}).set_index('date')
     returns_with_free = returns.join(extend_timeseries_by_all_dates(free_returns), how='left').ffill()

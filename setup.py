@@ -9,7 +9,6 @@ if os.path.exists(requirements_path):
         requirements = [line.strip() for line in f if line.strip() and not line.strip().startswith('#')]
 else:
     requirements = [
-        "fund_insight_engine>=0.7.4",
         "universal_timeseries_transformer>=0.2.7",
         "string_date_controller>=0.2.7",
         "canonical_transformer>=0.2.7",
@@ -17,7 +16,7 @@ else:
 
 setup(
     name="timeseries_performance_calculator",
-    version="0.2.1",
+    version="0.2.2",
     packages=find_packages(),
     install_requires=requirements,
     author="June Young Park",
