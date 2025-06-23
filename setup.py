@@ -4,19 +4,12 @@ import os
 here = os.path.abspath(os.path.dirname(__file__))
 requirements_path = os.path.join(here, 'requirements.txt')
 
-if os.path.exists(requirements_path):
-    with open(requirements_path, encoding='utf-8') as f:
-        requirements = [line.strip() for line in f if line.strip() and not line.strip().startswith('#')]
-else:
-    requirements = [
-        "universal_timeseries_transformer>=0.2.7",
-        "string_date_controller>=0.2.7",
-        "canonical_transformer>=0.2.7",
-    ]
+with open(requirements_path) as f:
+    requirements = [line.strip() for line in f if line.strip() and not line.strip().startswith('#')]
 
 setup(
     name="timeseries_performance_calculator",
-    version="0.2.2",
+    version="0.2.3",
     packages=find_packages(),
     install_requires=requirements,
     author="June Young Park",
