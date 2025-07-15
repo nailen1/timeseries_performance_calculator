@@ -14,7 +14,7 @@ def show_tables_year(prices:pd.DataFrame, name_benchmark:Optional[str]=None, opt
     table_ytd = show_table_yearly_relative(prices, name_benchmark=name_benchmark, option_round=option_round, option_signed=option_signed, option_rename_index=option_rename_index)
     return [table.join(table_ytd.iloc[:, idx]) for idx, table in enumerate(tables_monthly)]
 
-def show_dfs_tables_year(prices:pd.DataFrame, name_benchmark:Optional[str]=None, option_round:Optional[int]=4, option_signed:bool=True, option_rename_index:bool=True):
+def get_dfs_tables_year(prices:pd.DataFrame, name_benchmark:Optional[str]=None, option_round:Optional[int]=4, option_signed:bool=False, option_rename_index:bool=False):
     tables_year = show_tables_year(prices, name_benchmark=name_benchmark, option_round=option_round, option_signed=option_signed, option_rename_index=option_rename_index)
     dfs_tables_year = {}
     for table in tables_year:
