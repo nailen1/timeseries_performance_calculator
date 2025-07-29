@@ -1,62 +1,46 @@
 from functools import partial
 import pandas as pd
-import numpy as np
-from universal_timeseries_transformer import map_timeserieses_to_list_of_timeserieses
-from timeseries_performance_calculator.tables import (
-    get_table_annualized_return_cagr,
-    get_table_annualized_return_days,
-    get_table_annualized_volatility,
-    get_table_maxdrawdown,
-    get_table_sharpe_ratio,
-    get_table_beta_by_index,
-    get_table_winning_ratio_by_index
-)
+from timeseries_performance_calculator.tables.period_returns_table import get_table_period_returns
+from timeseries_performance_calculator.tables.monthly_returns_table import get_table_monthly_returns
+from timeseries_performance_calculator.tables.yearly_returns_table import get_table_yearly_returns
+from timeseries_performance_calculator.tables.annualized_return_table import get_table_annualized_return_cagr, get_table_annualized_return_days
+from timeseries_performance_calculator.tables.annualized_volatility_table import get_table_annualized_volatility
+from timeseries_performance_calculator.tables.sharpe_ratio_table import get_table_sharpe_ratio
+from timeseries_performance_calculator.tables.maxdrawdown_table import get_table_maxdrawdown
+from timeseries_performance_calculator.tables.beta_table import get_table_beta_by_index
+from timeseries_performance_calculator.tables.winning_ratio_table import get_table_winning_ratio_by_index
+from .parser import get_component_prices_in_prices, get_benchmark_price_in_prices
+from .basis import get_crosssectional_result, get_crosssectional_benchmark_result_by_components, get_crosssectional_benchmark_result, map_components_to_crosssectional_total_performance, map_components_to_crosssectional_yearly_relative
 
-def get_cross_sectional_performance_by_kernel(kernel, cross_sectional_prices, option_dropna=True):
-    if option_dropna:
-        cross_sectional_prices = cross_sectional_prices.dropna(axis=1, how='all')
-    list_of_prices = map_timeserieses_to_list_of_timeserieses(cross_sectional_prices)
-    dfs = [kernel(price.dropna()) for price in list_of_prices]
-    df = pd.concat(dfs)
-    return df
 
-def get_cross_sectional_benchmark_performance_by_kernel(kernel, cross_sectional_prices, benchmark_price, option_dropna=True):
-    if option_dropna:
-        cross_sectional_prices = cross_sectional_prices.dropna(axis=1, how='all')
-    list_of_prices = map_timeserieses_to_list_of_timeserieses(cross_sectional_prices)
-    results = []
-    for prices in list_of_prices:
-        prices = prices.join(benchmark_price, how='left', rsuffix='_benchmark')
-        df = kernel(prices)
-        result = df.copy().iloc[:1, :]
-        if '_benchmark' in df.index[-1]:
-            result.iloc[0, 0] = np.nan
-        results.append(result)
-    return pd.concat(results)
+get_crosssectional_period_returns = partial(get_crosssectional_result, get_table_period_returns)
+get_crosssectional_yearly_returns = partial(get_crosssectional_result, get_table_yearly_returns)
+get_crosssectional_monthly_returns = partial(get_crosssectional_result, get_table_monthly_returns)
+get_crosssectional_annualized_return_cagr = partial(get_crosssectional_result, get_table_annualized_return_cagr)
+get_crosssectional_annualized_return_days = partial(get_crosssectional_result, get_table_annualized_return_days)
+get_crosssectional_annualized_volatility = partial(get_crosssectional_result, get_table_annualized_volatility)
+get_crosssectional_maxdrawdown = partial(get_crosssectional_result, get_table_maxdrawdown)
+get_crosssectional_sharpe_ratio = partial(get_crosssectional_result, get_table_sharpe_ratio)
 
-get_cross_sectional_annualized_return_cagr = partial(get_cross_sectional_performance_by_kernel, get_table_annualized_return_cagr)
-get_cross_sectional_annualized_return_days = partial(get_cross_sectional_performance_by_kernel, get_table_annualized_return_days)
-get_cross_sectional_annualized_volatility = partial(get_cross_sectional_performance_by_kernel, get_table_annualized_volatility)
-get_cross_sectional_maxdrawdown = partial(get_cross_sectional_performance_by_kernel, get_table_maxdrawdown)
-get_cross_sectional_sharpe_ratio = partial(get_cross_sectional_performance_by_kernel, get_table_sharpe_ratio)
-get_cross_sectional_beta_by_benchmark = partial(get_cross_sectional_benchmark_performance_by_kernel, get_table_beta_by_index)
-get_cross_sectional_winning_ratio_by_benchmark = partial(get_cross_sectional_benchmark_performance_by_kernel, get_table_winning_ratio_by_index)
+get_crosssectional_beta_by_components = partial(get_crosssectional_benchmark_result_by_components, get_table_beta_by_index)
+get_crosssectional_winning_ratio_by_components = partial(get_crosssectional_benchmark_result_by_components, get_table_winning_ratio_by_index)
+get_crosssectional_beta = partial(get_crosssectional_benchmark_result, get_table_beta_by_index)
+get_crosssectional_winning_ratio = partial(get_crosssectional_benchmark_result, get_table_winning_ratio_by_index)
 
-def get_cross_sectional_performances(cross_sectional_prices, benchmark_column_index=1, benchmark_price=None, option_dropna=True):
-    if option_dropna:
-        cross_sectional_prices = cross_sectional_prices.dropna(axis=1, how='all')
-    df_annualized_return_cagr = get_cross_sectional_annualized_return_cagr(cross_sectional_prices, option_dropna=False)
-    df_annualized_return_days = get_cross_sectional_annualized_return_days(cross_sectional_prices, option_dropna=False)
-    df_annualized_volatility = get_cross_sectional_annualized_volatility(cross_sectional_prices, option_dropna=False)
-    df_maxdrawdown = get_cross_sectional_maxdrawdown(cross_sectional_prices, option_dropna=False)
-    df_sharpe_ratio = get_cross_sectional_sharpe_ratio(cross_sectional_prices, option_dropna=False)
-    dfs = [df_annualized_return_cagr, df_annualized_return_days, df_annualized_volatility, df_maxdrawdown, df_sharpe_ratio]
-    
-    if benchmark_column_index is not None and benchmark_price is None:
-        benchmark_price = cross_sectional_prices.iloc[:, benchmark_column_index]
+def get_crosssectional_yearly_relative(prices: pd.DataFrame, benchmark_index: int = -1, benchmark_name: str = None) -> pd.DataFrame:
+    component_prices = get_component_prices_in_prices(prices, benchmark_index, benchmark_name)
+    benchmark_price = get_benchmark_price_in_prices(prices, benchmark_index, benchmark_name)
+    return map_components_to_crosssectional_yearly_relative(component_prices, benchmark_price)
 
-    if benchmark_price is not None:
-        df_beta_by_benchmark = get_cross_sectional_beta_by_benchmark(cross_sectional_prices, benchmark_price, option_dropna=False)
-        df_winning_ratio_by_benchmark = get_cross_sectional_winning_ratio_by_benchmark(cross_sectional_prices, benchmark_price, option_dropna=False)
-        dfs = [*dfs, df_beta_by_benchmark, df_winning_ratio_by_benchmark]
-    return pd.concat(dfs, axis=1)
+def get_crosssectional_total_performance(prices: pd.DataFrame, benchmark_index: int = -1, benchmark_name: str = None) -> pd.DataFrame:
+    component_prices = get_component_prices_in_prices(prices, benchmark_index, benchmark_name)
+    benchmark_price = get_benchmark_price_in_prices(prices, benchmark_index, benchmark_name)
+    return map_components_to_crosssectional_total_performance(component_prices, benchmark_price)
+
+def get_crosssectional_total_performance_without_benchmark(component_prices: list[pd.DataFrame]) -> pd.DataFrame:
+    annualized_return_cagr = get_crosssectional_annualized_return_cagr(component_prices)
+    annualized_return_days = get_crosssectional_annualized_return_days(component_prices)
+    annualized_volatility = get_crosssectional_annualized_volatility(component_prices)
+    maxdrawdown = get_crosssectional_maxdrawdown(component_prices)
+    sharpe_ratio = get_crosssectional_sharpe_ratio(component_prices)
+    return pd.concat([annualized_return_cagr, annualized_return_days, annualized_volatility, maxdrawdown, sharpe_ratio], axis=1)

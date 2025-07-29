@@ -1,60 +1,159 @@
 from functools import cached_property
-from universal_timeseries_transformer import PricesMatrix, map_timeserieses_to_list_of_timeserieses
-from timeseries_performance_calculator.tables.total import get_table_total_performance, get_dfs_tables_year
-from timeseries_performance_calculator.tables.period_returns_table import get_table_period_returns
-from timeseries_performance_calculator.tables.yearly_returns_table import get_table_yearly_returns
-from timeseries_performance_calculator.tables.monthly_returns_table import get_table_monthly_returns
-from timeseries_performance_calculator.basis.return_calculator import calculate_return
-from timeseries_performance_calculator.cross_sectional_analysis import get_cross_sectional_performances
+import pandas as pd
+from universal_timeseries_transformer import PricesMatrix, decompose_timeserieses_to_list_of_timeserieses, plot_timeseries
+from timeseries_performance_calculator.tables.total import get_dfs_tables_year
+from timeseries_performance_calculator.cross_sectional_analysis import (
+    get_crosssectional_total_performance, 
+    get_crosssectional_total_performance_without_benchmark, 
+    get_crosssectional_period_returns,
+    get_crosssectional_yearly_returns,
+    get_crosssectional_monthly_returns,
+    get_crosssectional_yearly_relative,
+    get_crosssectional_annualized_return_cagr,
+    get_crosssectional_annualized_return_days,
+    get_crosssectional_annualized_volatility,
+    get_crosssectional_maxdrawdown,
+    get_crosssectional_sharpe_ratio,
+    get_crosssectional_beta,
+    get_crosssectional_winning_ratio,
+)
+from timeseries_performance_calculator.cross_sectional_analysis.parser import get_benchmark_price_in_prices, get_component_prices_in_prices
+
 
 class Performance:
-    def __init__(self, timeseries, benchmark_column_index=-1):
+    def __init__(self, timeseries, benchmark_index: int = None, benchmark_name: str = None, benchmark_timeseries: pd.DataFrame = None):
         self.timeseries = timeseries
-        self.benchmark_column_index = benchmark_column_index
+        self.set_benchmark_and_components(benchmark_index, benchmark_name, benchmark_timeseries)
 
-    @cached_property
-    def list_of_timeserieses(self):
-        return map_timeserieses_to_list_of_timeserieses(self.timeseries)
-
+    def set_benchmark_and_components(self, benchmark_index: int = -1, benchmark_name: str = None, benchmark_timeseries: pd.DataFrame = None) -> pd.DataFrame:
+        if benchmark_timeseries is not None:
+            if benchmark_timeseries.columns[0] in self.timeseries.columns:
+                self.benchmark_timeseries = benchmark_timeseries
+                self.component_timeserieses = get_component_prices_in_prices(self.timeseries, benchmark_index=self.benchmark_index)
+                self.ordered_timeserieses = pd.concat([*self.component_timeserieses, self.benchmark_timeseries], axis=1)
+                self.benchmark_name = benchmark_timeseries.columns[0]
+                self.benchmark_index = self.timeseries.columns.get_loc(self.benchmark_name)
+            else:
+                self.component_timeserieses = decompose_timeserieses_to_list_of_timeserieses(self.timeseries)
+                self.ordered_timeserieses = pd.concat(self.component_timeserieses, axis=1).join(benchmark_timeseries)
+                self.benchmark_name = benchmark_timeseries.columns[0]
+                self.benchmark_timeseries = self.ordered_timeserieses[self.benchmark_name]
+                self.benchmark_index = self.ordered_timeserieses.columns.get_loc(self.benchmark_name)
+        else:   
+            if benchmark_name is not None:
+                self.benchmark_timeseries = get_benchmark_price_in_prices(self.timeseries, benchmark_name=benchmark_name)
+                self.benchmark_name = benchmark_name
+                self.benchmark_index = self.timeseries.columns.get_loc(self.benchmark_name)
+                self.component_timeserieses = get_component_prices_in_prices(self.timeseries, benchmark_index=self.benchmark_index)
+                self.ordered_timeserieses = pd.concat([*self.component_timeserieses, self.benchmark_timeseries], axis=1)
+            elif benchmark_index is not None:
+                self.benchmark_timeseries = get_benchmark_price_in_prices(self.timeseries, benchmark_index=benchmark_index)
+                self.benchmark_name = self.benchmark_timeseries.columns[0]
+                self.benchmark_index = self.timeseries.columns.get_loc(self.benchmark_name)
+                self.component_timeserieses = get_component_prices_in_prices(self.timeseries, benchmark_index=self.benchmark_index)
+                self.ordered_timeserieses = pd.concat([*self.component_timeserieses, self.benchmark_timeseries], axis=1)
+            else:
+                self.benchmark_name = None
+                self.benchmark_index = None
+                self.benchmark_timeseries = None
+                self.component_timeserieses = decompose_timeserieses_to_list_of_timeserieses(self.timeseries)
+                self.ordered_timeserieses = pd.concat([*self.component_timeserieses], axis=1)
+        
     @cached_property
     def pm(self):
-        return PricesMatrix(self.timeseries)
+        return PricesMatrix(self.ordered_timeserieses)
     
     @cached_property
     def prices(self):
         return self.pm.df
 
     @cached_property
+    def pms(self):
+        lst_of_prices = decompose_timeserieses_to_list_of_timeserieses(self.ordered_timeserieses)
+        return [PricesMatrix(df) for df in lst_of_prices]
+
+    @cached_property
     def returns(self):
-        return self.pm.returns
+        lst_of_returns = [pm.returns for pm in self.pms]
+        return pd.concat(lst_of_returns, axis=1)
     
     @cached_property
     def cumreturns(self):
-        return self.pm.cumreturns
+        lst_of_cumreturns = [pm.cumreturns for pm in self.pms]
+        return pd.concat(lst_of_cumreturns, axis=1)
     
     @cached_property
     def total_performance(self):
-        if self.timeseries.shape[1] == 1:
-            return get_table_total_performance(self.prices, benchmark_column_index=None)
-        return get_cross_sectional_performances(self.prices, benchmark_column_index=self.benchmark_column_index)
+        if self.benchmark_timeseries is not None:
+            return get_crosssectional_total_performance(self.ordered_timeserieses)
+        else:
+            return get_crosssectional_total_performance_without_benchmark(self.ordered_timeserieses)
     
     @cached_property
     def period_returns(self):
-        returns = get_table_period_returns(self.prices)
-        for i, index in enumerate(returns.index):
-            df = self.prices[[index]].dropna()
-            returns.iloc[i, -1] = calculate_return(start=df.iloc[0, 0], end=df.iloc[-1, 0])
-        return returns
+        return get_crosssectional_period_returns(self.ordered_timeserieses)
     
     @cached_property
     def yearly_returns(self):
-        return get_table_yearly_returns(self.prices)
+        return get_crosssectional_yearly_returns(self.ordered_timeserieses)
     
     @cached_property
     def monthly_returns(self):
-        return get_table_monthly_returns(self.prices)
+        return get_crosssectional_monthly_returns(self.ordered_timeserieses)
     
     @cached_property
-    def dfs_tables_year(self):
-        return get_dfs_tables_year(self.prices)
+    def yearly_relative(self):
+        return get_crosssectional_yearly_relative(self.ordered_timeserieses)
     
+    @cached_property
+    def annualized_return_cagr(self):
+        return get_crosssectional_annualized_return_cagr(self.ordered_timeserieses)
+    
+    @cached_property
+    def annualized_return_days(self):
+        return get_crosssectional_annualized_return_days(self.ordered_timeserieses)
+    
+    @cached_property
+    def annualized_volatility(self):
+        return get_crosssectional_annualized_volatility(self.ordered_timeserieses)
+    
+    @cached_property
+    def maxdrawdown(self):
+        return get_crosssectional_maxdrawdown(self.ordered_timeserieses)
+    
+    @cached_property
+    def sharpe_ratio(self):
+        return get_crosssectional_sharpe_ratio(self.ordered_timeserieses)
+    
+    @cached_property
+    def beta(self):
+        if self.benchmark_timeseries is not None:
+            return get_crosssectional_beta(self.ordered_timeserieses)
+        else:
+            raise ValueError("Benchmark timeseries is required to calculate beta")
+    
+    @cached_property
+    def winning_ratio(self):
+        if self.benchmark_timeseries is not None:
+            return get_crosssectional_winning_ratio(self.ordered_timeserieses)
+        else:
+            raise ValueError("Benchmark timeseries is required to calculate winning ratio")
+        
+    def plot_cumreturns(
+            self, 
+            title=None, 
+            option_last_name=False, 
+            option_last_value=True, 
+            option_main=False, 
+            option_num_to_show=None,
+            figsize=None
+            ):
+        return plot_timeseries(
+            self.cumreturns.fillna(0), 
+            title=title if title is not None else f"Cumreturns: {list(self.ordered_timeserieses.columns[:5])}",
+            option_last_name=option_last_name, 
+            option_last_value=option_last_value, 
+            option_main=option_main, 
+            option_num_to_show=option_num_to_show if option_num_to_show is not None else len(self.cumreturns.columns),
+            figsize=figsize if figsize is not None else (10, 5)
+            );
