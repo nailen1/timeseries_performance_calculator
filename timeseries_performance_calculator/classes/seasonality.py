@@ -4,12 +4,17 @@ from universal_timeseries_transformer import extend_timeseries_by_all_dates, tra
 from .performance import Performance
 
 class Seasonality:
-    def __init__(self, timeseries, benchmark_timeseries):
+    def __init__(self, timeseries, benchmark_timeseries=None):
         self.timeseries = timeseries
-        self.benchmark_timeseries = benchmark_timeseries
+        self.benchmark_timeseries = benchmark_timeseries if benchmark_timeseries else self.set_null_timeseries()
         self.perf = Performance(timeseries=self.prices, benchmark_index=-1)
         self.index_name = self.timeseries.columns[0]
         self.benchmark_name = self.benchmark_timeseries.columns[0]
+
+    def set_null_timeseries(self):
+        null_timeseries = self.timeseries.rename(columns={self.timeseries.columns[0]: 'null'})
+        null_timeseries.iloc[:, 0] = 0
+        return null_timeseries
 
     @cached_property
     def prices(self):
