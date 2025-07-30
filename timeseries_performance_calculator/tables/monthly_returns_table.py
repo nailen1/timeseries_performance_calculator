@@ -31,3 +31,13 @@ def map_prices_to_tables_monthly_returns(prices, option_round=None, option_signe
     return [style_table_year_monthly(table, option_round=option_round, option_signed=option_signed, option_rename_index=option_rename_index) for table in tables]
     
 show_tables_monthly_returns = partial(map_prices_to_tables_monthly_returns, option_round=4, option_signed=True, option_rename_index=True)
+
+def get_table_seasonality(prices, index=0):
+    df = map_prices_to_table_monthly_returns(prices).iloc[[index]]
+    df = df.T
+    df['year'] = df.index.map(lambda x: x.split('-')[0])
+    df['month'] = df.index.map(lambda x: x.split('-')[1])
+    df = df.pivot(index='year', columns='month', values=df.columns[0]).dropna(axis=0, how='all')
+    df.loc['average: month', :] = df.mean(axis=0)
+    df.loc[:, 'average: year'] = df.mean(axis=1)
+    return df

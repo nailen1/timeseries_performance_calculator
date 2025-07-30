@@ -18,6 +18,7 @@ from timeseries_performance_calculator.cross_sectional_analysis import (
     get_crosssectional_winning_ratio,
 )
 from timeseries_performance_calculator.cross_sectional_analysis.parser import get_benchmark_price_in_prices, get_component_prices_in_prices
+from .basis import get_table_seasonality
 
 
 class Performance:
@@ -157,3 +158,13 @@ class Performance:
             option_num_to_show=option_num_to_show if option_num_to_show is not None else len(self.cumreturns.columns),
             figsize=figsize if figsize is not None else (10, 5)
             );
+
+    def get_seasonality(self, index_name):
+        return get_table_seasonality(self.monthly_returns, index_name)
+    
+    def get_relative_seasonality(self, index_name):
+        df_port = get_table_seasonality(self.monthly_returns, index_name)
+        df_bm = get_table_seasonality(self.monthly_returns, self.benchmark_name)
+        df_relative = df_port - df_bm
+        df_relative = df_relative.dropna(axis=0, how='all')
+        return df_relative

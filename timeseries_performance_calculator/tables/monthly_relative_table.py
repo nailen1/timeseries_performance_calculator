@@ -42,3 +42,13 @@ def show_table_monthly_relative_by_year(prices, name_benchmark=None, year=None, 
     if year is None:
         return tables[-1]
     return dct[year]       
+
+# def get_table_relative_seasonality(prices, index=-1):
+#     df = map_prices_to_table_monthly_relative(prices).iloc[[index]]
+#     df = df.T
+#     df['year'] = df.index.map(lambda x: x.split('-')[0])
+#     df['month'] = df.index.map(lambda x: x.split('-')[1])
+#     df = df.pivot(index='year', columns='month', values=df.columns[0]).sort_index(ascending=False).dropna(axis=0, how='all')
+#     df.loc['average: month', :] = df.mean(axis=0)
+#     df.loc[:, 'average: year'] = df.mean(axis=1)
+#     return df
