@@ -1,6 +1,12 @@
 from functools import cached_property
 import pandas as pd
-from universal_timeseries_transformer import PricesMatrix, decompose_timeserieses_to_list_of_timeserieses, plot_timeseries
+from universal_timeseries_transformer import (
+    PricesMatrix, 
+    decompose_timeserieses_to_list_of_timeserieses, 
+    plot_timeseries, 
+    transform_timeseries, 
+    extend_timeseries_by_all_dates,
+    )
 from timeseries_performance_calculator.tables.total import get_dfs_tables_year
 from timeseries_performance_calculator.cross_sectional_analysis import (
     get_crosssectional_total_performance, 
@@ -23,23 +29,28 @@ from .basis import get_table_seasonality
 
 class Performance:
     def __init__(self, timeseries, benchmark_index: int = None, benchmark_name: str = None, benchmark_timeseries: pd.DataFrame = None):
-        self.timeseries = timeseries
-        self.set_benchmark_and_components(benchmark_index, benchmark_name, benchmark_timeseries)
+        self.set_benchmark_and_components(timeseries, benchmark_index, benchmark_name, benchmark_timeseries)
 
-    def set_benchmark_and_components(self, benchmark_index: int = -1, benchmark_name: str = None, benchmark_timeseries: pd.DataFrame = None) -> pd.DataFrame:
+    def set_benchmark_and_components(self, timeseries, benchmark_index: int = -1, benchmark_name: str = None, benchmark_timeseries: pd.DataFrame = None) -> pd.DataFrame:
+
+        def transform_timeseries_canonically(timeseries):
+            return transform_timeseries(extend_timeseries_by_all_dates(timeseries), option_type='str')
+        self.timeseries = transform_timeseries_canonically(timeseries)
+
         if benchmark_timeseries is not None:
             if benchmark_timeseries.columns[0] in self.timeseries.columns:
-                self.benchmark_timeseries = benchmark_timeseries
                 self.component_timeserieses = get_component_prices_in_prices(self.timeseries, benchmark_index=self.benchmark_index)
                 self.ordered_timeserieses = pd.concat([*self.component_timeserieses, self.benchmark_timeseries], axis=1)
                 self.benchmark_name = benchmark_timeseries.columns[0]
                 self.benchmark_index = self.timeseries.columns.get_loc(self.benchmark_name)
+                self.benchmark_timeseries = self.ordered_timeserieses[[self.benchmark_name]]
+
             else:
                 self.component_timeserieses = decompose_timeserieses_to_list_of_timeserieses(self.timeseries)
                 self.ordered_timeserieses = pd.concat(self.component_timeserieses, axis=1).join(benchmark_timeseries)
                 self.benchmark_name = benchmark_timeseries.columns[0]
-                self.benchmark_timeseries = self.ordered_timeserieses[self.benchmark_name]
                 self.benchmark_index = self.ordered_timeserieses.columns.get_loc(self.benchmark_name)
+                self.benchmark_timeseries = self.ordered_timeserieses[[self.benchmark_name]]
         else:   
             if benchmark_name is not None:
                 self.benchmark_timeseries = get_benchmark_price_in_prices(self.timeseries, benchmark_name=benchmark_name)
