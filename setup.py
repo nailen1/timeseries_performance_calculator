@@ -9,7 +9,7 @@ with open(requirements_path) as f:
 
 setup(
     name="timeseries_performance_calculator",
-    version="0.3.1",
+    version="0.3.2",
     packages=find_packages(),
     install_requires=requirements,
     author="June Young Park",

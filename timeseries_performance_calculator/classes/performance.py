@@ -39,15 +39,14 @@ class Performance:
 
         if benchmark_timeseries is not None:
             if benchmark_timeseries.columns[0] in self.timeseries.columns:
-                self.component_timeserieses = get_component_prices_in_prices(self.timeseries, benchmark_index=self.benchmark_index)
-                self.ordered_timeserieses = pd.concat([*self.component_timeserieses, self.benchmark_timeseries], axis=1)
-                self.benchmark_name = benchmark_timeseries.columns[0]
+                self.benchmark_name = benchmark_name
                 self.benchmark_index = self.timeseries.columns.get_loc(self.benchmark_name)
-                self.benchmark_timeseries = self.ordered_timeserieses[[self.benchmark_name]]
-
+                self.component_timeserieses = get_component_prices_in_prices(self.timeseries, benchmark_index=self.benchmark_index)
+                self.benchmark_timeseries = get_benchmark_price_in_prices(self.timeseries, benchmark_index=self.benchmark_index)
+                self.ordered_timeserieses = pd.concat([*self.component_timeserieses, self.benchmark_timeseries], axis=1).ffill()
             else:
                 self.component_timeserieses = decompose_timeserieses_to_list_of_timeserieses(self.timeseries)
-                self.ordered_timeserieses = pd.concat(self.component_timeserieses, axis=1).join(benchmark_timeseries)
+                self.ordered_timeserieses = pd.concat(self.component_timeserieses, axis=1).join(benchmark_timeseries).ffill()
                 self.benchmark_name = benchmark_timeseries.columns[0]
                 self.benchmark_index = self.ordered_timeserieses.columns.get_loc(self.benchmark_name)
                 self.benchmark_timeseries = self.ordered_timeserieses[[self.benchmark_name]]
@@ -57,19 +56,19 @@ class Performance:
                 self.benchmark_name = benchmark_name
                 self.benchmark_index = self.timeseries.columns.get_loc(self.benchmark_name)
                 self.component_timeserieses = get_component_prices_in_prices(self.timeseries, benchmark_index=self.benchmark_index)
-                self.ordered_timeserieses = pd.concat([*self.component_timeserieses, self.benchmark_timeseries], axis=1)
+                self.ordered_timeserieses = pd.concat([*self.component_timeserieses, self.benchmark_timeseries], axis=1).ffill()
             elif benchmark_index is not None:
                 self.benchmark_timeseries = get_benchmark_price_in_prices(self.timeseries, benchmark_index=benchmark_index)
                 self.benchmark_name = self.benchmark_timeseries.columns[0]
                 self.benchmark_index = self.timeseries.columns.get_loc(self.benchmark_name)
                 self.component_timeserieses = get_component_prices_in_prices(self.timeseries, benchmark_index=self.benchmark_index)
-                self.ordered_timeserieses = pd.concat([*self.component_timeserieses, self.benchmark_timeseries], axis=1)
+                self.ordered_timeserieses = pd.concat([*self.component_timeserieses, self.benchmark_timeseries], axis=1).ffill()
             else:
                 self.benchmark_name = None
                 self.benchmark_index = None
                 self.benchmark_timeseries = None
                 self.component_timeserieses = decompose_timeserieses_to_list_of_timeserieses(self.timeseries)
-                self.ordered_timeserieses = pd.concat([*self.component_timeserieses], axis=1)
+                self.ordered_timeserieses = pd.concat([*self.component_timeserieses], axis=1).ffill()
         
     @cached_property
     def pm(self):
