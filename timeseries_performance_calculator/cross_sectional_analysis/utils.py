@@ -32,15 +32,15 @@ def get_crosssectional_yearly_relative(prices: pd.DataFrame, benchmark_index: in
     benchmark_price = get_benchmark_price_in_prices(prices, benchmark_index, benchmark_name)
     return map_components_to_crosssectional_yearly_relative(component_prices, benchmark_price)
 
-def get_crosssectional_total_performance(prices: pd.DataFrame, benchmark_index: int = -1, benchmark_name: str = None) -> pd.DataFrame:
+def get_crosssectional_total_performance(prices: pd.DataFrame, benchmark_index: int = -1, benchmark_name: str = None, free_returns: pd.DataFrame= None) -> pd.DataFrame:
     component_prices = get_component_prices_in_prices(prices, benchmark_index, benchmark_name)
     benchmark_price = get_benchmark_price_in_prices(prices, benchmark_index, benchmark_name)
-    return map_components_to_crosssectional_total_performance(component_prices, benchmark_price)
+    return map_components_to_crosssectional_total_performance(component_prices, benchmark_price, free_returns)
 
-def get_crosssectional_total_performance_without_benchmark(component_prices: list[pd.DataFrame]) -> pd.DataFrame:
+def get_crosssectional_total_performance_without_benchmark(component_prices: list[pd.DataFrame], free_returns: pd.DataFrame= None) -> pd.DataFrame:
     annualized_return_cagr = get_crosssectional_annualized_return_cagr(component_prices)
     annualized_return_days = get_crosssectional_annualized_return_days(component_prices)
     annualized_volatility = get_crosssectional_annualized_volatility(component_prices)
     maxdrawdown = get_crosssectional_maxdrawdown(component_prices)
-    sharpe_ratio = get_crosssectional_sharpe_ratio(component_prices)
+    sharpe_ratio = get_crosssectional_sharpe_ratio(component_prices, free_returns=free_returns)
     return pd.concat([annualized_return_cagr, annualized_return_days, annualized_volatility, maxdrawdown, sharpe_ratio], axis=1)

@@ -37,10 +37,10 @@ def get_crosssectional_benchmark_result(kernel: Callable, prices: pd.DataFrame, 
     benchmark_price = get_benchmark_price_in_prices(prices, benchmark_index, benchmark_name)
     return get_crosssectional_benchmark_result_by_components(kernel, component_prices, benchmark_price)
 
-def get_crosssectional_total_performance_by_components(component_prices: list[pd.DataFrame], benchmark_price: pd.DataFrame) -> pd.DataFrame:
+def get_crosssectional_total_performance_by_components(component_prices: list[pd.DataFrame], benchmark_price: pd.DataFrame, free_returns: pd.DataFrame= None) -> pd.DataFrame:
     dfs = []
     for i, price in enumerate(component_prices):
-        df = get_table_total_performance(price.join(benchmark_price))
+        df = get_table_total_performance(price.join(benchmark_price), free_returns=free_returns)
         if i == 0:
             row_bm = df.iloc[[-1]]
         dfs.append(df.iloc[[0]])

@@ -28,8 +28,9 @@ from .basis import get_table_seasonality
 
 
 class Performance:
-    def __init__(self, timeseries, benchmark_index: int = None, benchmark_name: str = None, benchmark_timeseries: pd.DataFrame = None):
+    def __init__(self, timeseries, benchmark_index: int = None, benchmark_name: str = None, benchmark_timeseries: pd.DataFrame = None, free_returns: pd.DataFrame = None):
         self.set_benchmark_and_components(timeseries, benchmark_index, benchmark_name, benchmark_timeseries)
+        self.free_returns = free_returns
 
     def set_benchmark_and_components(self, timeseries, benchmark_index: int = -1, benchmark_name: str = None, benchmark_timeseries: pd.DataFrame = None) -> pd.DataFrame:
 
@@ -96,9 +97,9 @@ class Performance:
     @cached_property
     def total_performance(self):
         if self.benchmark_timeseries is not None:
-            return get_crosssectional_total_performance(self.ordered_timeserieses)
+            return get_crosssectional_total_performance(self.ordered_timeserieses, free_returns=self.free_returns)
         else:
-            return get_crosssectional_total_performance_without_benchmark(self.ordered_timeserieses)
+            return get_crosssectional_total_performance_without_benchmark(self.ordered_timeserieses, free_returns=self.free_returns)
     
     @cached_property
     def period_returns(self):
@@ -134,7 +135,7 @@ class Performance:
     
     @cached_property
     def sharpe_ratio(self):
-        return get_crosssectional_sharpe_ratio(self.ordered_timeserieses)
+        return get_crosssectional_sharpe_ratio(self.ordered_timeserieses, free_returns=self.free_returns)
     
     @cached_property
     def beta(self):
