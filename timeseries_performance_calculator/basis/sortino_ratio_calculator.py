@@ -4,21 +4,23 @@ from universal_timeseries_transformer import extend_timeseries_by_all_dates
 from aws_s3_controller import load_csv_in_bucket
 from .basis import validate_returns_with_free_returns
 
-def calculate_sharpe_ratio(returns, free_returns=None):
+def calculate_sortino_ratio(returns, free_returns=None):
     if free_returns is None:
         free_returns = pd.DataFrame(data={'date': returns.index, 'zero_free_return': 0}).set_index('date')
     returns_with_free = returns.join(extend_timeseries_by_all_dates(free_returns), how='left').ffill()
     validate_returns_with_free_returns(returns_with_free)
-    expected_return = returns_with_free.iloc[:, 0].mean() 
-    std = returns_with_free.iloc[:, 0].std()
+    returns_portfolio = returns_with_free.iloc[:, 0]
+    returns_portfolio_negative = returns_portfolio[returns_portfolio < 0]
+    expected_return = returns_portfolio.mean() 
+    std_downside = returns_portfolio_negative.std()
     expected_free_return = returns_with_free.iloc[:, 1].mean()
     ANNUAL_DAYS = 365
-    annualized_expected_fund_return = expected_return*ANNUAL_DAYS
+    annualized_expected_portfolio_return = expected_return*ANNUAL_DAYS
     annualized_expected_free_return = expected_free_return*ANNUAL_DAYS
-    annualized_expected_excess_return = annualized_expected_fund_return - annualized_expected_free_return
-    annualized_fund_std = std * np.sqrt(ANNUAL_DAYS)
-    sharpe_ratio = annualized_expected_excess_return / annualized_fund_std
-    return sharpe_ratio
+    annualized_expected_excess_return = annualized_expected_portfolio_return - annualized_expected_free_return
+    annualized_std_downside = std_downside * np.sqrt(ANNUAL_DAYS)
+    sortino_ratio = annualized_expected_excess_return / annualized_std_downside
+    return sortino_ratio
 
 # temp: import from aws_s3
 def load_free_returns_from_s3():

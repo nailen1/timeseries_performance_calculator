@@ -9,6 +9,10 @@ from .maxdrawdown_table import *
 from .table_utils import *
 from .beta_table import *
 from .sharpe_ratio_table import *
+from .sortino_ratio_table import *
 from .total import *
 from .information_ratio_table import *
 from .tracking_error_table import *
+from .up_capture_table import *
+from .down_capture_table import *
+from .updown_capture_ratio_table import *

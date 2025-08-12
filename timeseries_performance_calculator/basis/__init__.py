@@ -6,3 +6,6 @@ from .beta_calculator import *
 from .sharpe_ratio_calculator import *
 from .tracking_error_calculator import *
 from .information_ratio_calculator import *
+from .up_capture import *
+from .down_capture import *
+from .updown_capture_ratio import *
