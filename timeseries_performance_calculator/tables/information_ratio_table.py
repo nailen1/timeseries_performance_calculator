@@ -5,7 +5,7 @@ from typing import Optional
 from universal_timeseries_transformer import PricesMatrix
 from timeseries_performance_calculator.basis.information_ratio_calculator import get_data_information_ratio_by_benchmark, get_data_information_ratio_by_index
 from timeseries_performance_calculator.functionals import pipe
-from timeseries_performance_calculator.tables.table_utils import style_table, validate_name_benchmark
+from .table_utils import style_table, validate_name_benchmark
 
 
 def map_prices_and_name_to_table_information_ratio(prices: pd.DataFrame, name_benchmark: str = None, option_self_manifest: bool = False) -> pd.DataFrame:

@@ -22,6 +22,8 @@ from timeseries_performance_calculator.cross_sectional_analysis import (
     get_crosssectional_sharpe_ratio,
     get_crosssectional_beta,
     get_crosssectional_winning_ratio,
+    get_crosssectional_information_ratio,
+    get_crosssectional_tracking_error,
 )
 from timeseries_performance_calculator.cross_sectional_analysis.parser import get_benchmark_price_in_prices, get_component_prices_in_prices
 from .basis import get_table_seasonality
@@ -151,6 +153,28 @@ class Performance:
         else:
             raise ValueError("Benchmark timeseries is required to calculate winning ratio")
         
+    @cached_property
+    def information_ratio(self):
+        if self.benchmark_timeseries is not None:
+            return get_crosssectional_information_ratio(self.ordered_timeserieses)
+        else:
+            raise ValueError("Benchmark timeseries is required to calculate information ratio")
+
+    @cached_property
+    def tracking_error(self):
+        if self.benchmark_timeseries is not None:
+            return get_crosssectional_tracking_error(self.ordered_timeserieses)
+        else:
+            raise ValueError("Benchmark timeseries is required to calculate tracking error")
+
+    @cached_property
+    def return_ytd(self):
+        return self.period_returns[['YTD']].rename(columns={'YTD': 'return_ytd'})
+    
+    @cached_property
+    def return_total(self):
+        return self.period_returns[['Since Inception']].rename(columns={'Since Inception': 'return_total'})
+
     def plot_cumreturns(
             self, 
             title=None, 

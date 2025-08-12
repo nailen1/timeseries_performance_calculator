@@ -7,7 +7,7 @@ from .tracking_error_calculator import calculate_tracking_error
 def calculate_information_ratio(returns):
     validate_returns_with_benchmark(returns)
     excess_return = returns.iloc[:, 0] - returns.iloc[:, 1] 
-    tracking_error = calculate_tracking_error(returns)
+    tracking_error = excess_return.std()
     expected_excess_return = excess_return.mean()
     ANNUAL_TRADING_DAYS = 252
     annualized_expected_excess_return = expected_excess_return*ANNUAL_TRADING_DAYS

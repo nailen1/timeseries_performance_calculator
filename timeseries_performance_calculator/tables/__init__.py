@@ -11,3 +11,4 @@ from .beta_table import *
 from .sharpe_ratio_table import *
 from .total import *
 from .information_ratio_table import *
+from .tracking_error_table import *
