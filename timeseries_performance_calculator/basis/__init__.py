@@ -4,3 +4,5 @@ from .annualized_volatility_calculator import *
 from .maxdrawdown_calculator import *
 from .beta_calculator import *
 from .sharpe_ratio_calculator import *
+from .tracking_error_calculator import *
+from .information_ratio_calculator import *

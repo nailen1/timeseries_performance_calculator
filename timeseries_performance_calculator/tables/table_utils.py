@@ -5,6 +5,10 @@ from canonical_transformer import map_number_to_signed_string
 from timeseries_performance_calculator.consts import MAPPING_INDEX_NAMES
 from timeseries_performance_calculator.functionals import pipe
 
+def validate_name_benchmark(name_benchmark: str, prices: pd.DataFrame) -> None:
+    if name_benchmark not in prices.columns:
+        raise ValueError(f"name_benchmark {name_benchmark} not found in prices")
+
 def style_numbers(df: pd.DataFrame, option_round: Union[int, None] = None, option_signed: bool = False) -> pd.DataFrame:
     df = df.copy()
     if option_round is not None:

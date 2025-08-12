@@ -5,11 +5,7 @@ import numpy as np
 from universal_timeseries_transformer import PricesMatrix
 from timeseries_performance_calculator.basis import get_data_beta_by_index, get_data_beta_by_benchmark
 from timeseries_performance_calculator.functionals import pipe
-from .table_utils import style_table
-
-def validate_name_benchmark(name_benchmark: str, prices: pd.DataFrame) -> None:
-    if name_benchmark not in prices.columns:
-        raise ValueError(f"name_benchmark {name_benchmark} not found in prices")
+from .table_utils import style_table, validate_name_benchmark
 
 def map_prices_and_name_to_table_beta(prices: pd.DataFrame, name_benchmark: str = None, option_self_manifest: bool = False) -> pd.DataFrame:
     name_benchmark = prices.columns[1] if name_benchmark is None else name_benchmark

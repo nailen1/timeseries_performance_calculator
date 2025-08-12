@@ -1,10 +1,7 @@
 import pandas as pd
 import numpy as np
 from universal_timeseries_transformer import split_timeseries_to_pair_timeseries, split_returns_to_pair_timeseries
-
-def validate_returns_with_benchmark(returns: pd.DataFrame) -> None:
-    if returns.shape[1] != 2:
-        raise ValueError("DataFrame must have exactly 2 columns")
+from .basis import validate_returns_with_benchmark
 
 def calculate_beta(returns: pd.DataFrame) -> float:
     validate_returns_with_benchmark(returns)
